@@ -1,0 +1,35 @@
+.homeContainer {
+  max-width: 1220px;
+  margin: auto;
+  padding: 40px 10px 0;
+  overflow: hidden;
+
+  .title {
+    font-weight: bold;
+    font-size: 36px;
+    color: #292d34;
+  }
+  .descWrap {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    justify-content: space-between;
+
+    .desc {
+      p {
+        padding: 10px;
+      }
+    }
+    .addButton {
+      font-weight: bold;
+      font-size: 14px;
+      color: #ffffff;
+      background: #00c408;
+      border-radius: 10px;
+      padding: 8px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+  }
+}

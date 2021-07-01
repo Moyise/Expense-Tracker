@@ -9,9 +9,33 @@ import {
   EXPENSE_EDIT_FAIL,
   EXPENSE_EDIT_REQUEST,
   EXPENSE_EDIT_SUCCESS,
+  EXPENSE_LIST_FAIL,
+  EXPENSE_LIST_REQUEST,
+  EXPENSE_LIST_SUCCESS,
 } from "../constants/expenseConstants";
 
-export const addExpense = () => async (dispatch, getState) => {
+export const getExpenses = () => async (dispatch) => {
+  try {
+    dispatch({ type: EXPENSE_LIST_REQUEST });
+
+    const { data } = await axios.get(`/api/expenses`);
+
+    dispatch({
+      type: EXPENSE_LIST_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: EXPENSE_LIST_FAIL,
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+    });
+  }
+};
+
+export const addExpense = (expense) => async (dispatch, getState) => {
   try {
     dispatch({ type: EXPENSE_ADD_REQUEST });
 
@@ -21,7 +45,7 @@ export const addExpense = () => async (dispatch, getState) => {
       },
     };
 
-    const { data } = await axios.post("/api/expenses", {}, config);
+    const { data } = await axios.post("/api/expenses", expense, config);
 
     dispatch({ type: EXPENSE_ADD_SUCCESS, payload: data });
   } catch (error) {
@@ -35,7 +59,7 @@ export const addExpense = () => async (dispatch, getState) => {
   }
 };
 
-export const editExpense = (expense) => async (dispatch, getState) => {
+export const editExpense = (expense, expenseId) => async (dispatch, getState) => {
   try {
     dispatch({ type: EXPENSE_EDIT_REQUEST });
 
@@ -45,7 +69,7 @@ export const editExpense = (expense) => async (dispatch, getState) => {
       },
     };
 
-    const { data } = await axios.put(`/api/expenses/${expense._id}`, expense, config);
+    const { data } = await axios.put(`/api/expenses/${expenseId}`, expense, config);
 
     dispatch({ type: EXPENSE_EDIT_SUCCESS, payload: data });
   } catch (error) {
@@ -69,7 +93,7 @@ export const deleteExpense = (id) => async (dispatch, getState) => {
       },
     };
 
-    await axios.put(`/api/expenses/${id}`, config);
+    await axios.delete(`/api/expenses/${id}`, config);
 
     dispatch({ type: EXPENSE_DELETE_SUCCESS });
   } catch (error) {

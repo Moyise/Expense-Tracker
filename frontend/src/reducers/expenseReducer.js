@@ -10,7 +10,26 @@ import {
   EXPENSE_EDIT_REQUEST,
   EXPENSE_EDIT_RESET,
   EXPENSE_EDIT_SUCCESS,
+  EXPENSE_LIST_FAIL,
+  EXPENSE_LIST_REQUEST,
+  EXPENSE_LIST_SUCCESS,
 } from "../constants/expenseConstants";
+
+export const expenseListReducer = (state = { expenses: [] }, { type, payload }) => {
+  switch (type) {
+    case EXPENSE_LIST_REQUEST:
+      return { loading: true, expenses: [] };
+    case EXPENSE_LIST_SUCCESS:
+      return {
+        loading: false,
+        expenses: payload.expenses,
+      };
+    case EXPENSE_LIST_FAIL:
+      return { loading: false, error: payload };
+    default:
+      return state;
+  }
+};
 
 export const expenseAddReducer = (state = {}, { type, payload }) => {
   switch (type) {
@@ -18,7 +37,7 @@ export const expenseAddReducer = (state = {}, { type, payload }) => {
       return { loading: true };
 
     case EXPENSE_ADD_SUCCESS:
-      return { loading: false, expense: payload };
+      return { loading: false, expense: payload, success: true };
 
     case EXPENSE_ADD_FAIL:
       return { loading: false, error: payload };
@@ -37,7 +56,7 @@ export const expenseEditReducer = (state = {}, { type, payload }) => {
       return { loading: true };
 
     case EXPENSE_EDIT_SUCCESS:
-      return { loading: false, expense: payload };
+      return { loading: false, expense: payload, success: true };
 
     case EXPENSE_EDIT_FAIL:
       return { loading: false, error: payload };

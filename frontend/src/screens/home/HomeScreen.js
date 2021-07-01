@@ -1,15 +1,33 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addExpense,
+  deleteExpense,
+  editExpense,
+  getExpenses,
+} from "../../actions/expenseActions";
 import EditableRow from "../../components/EditableRow";
 import ReadOnlyRow from "../../components/ReadOnlyRow";
-import expenses from "../../expenses";
+import { EXPENSE_ADD_RESET } from "../../constants/expenseConstants";
 import "./home.scss";
 
 const HomeScreen = () => {
+  const dispatch = useDispatch();
+  const expenseList = useSelector((state) => state.expenseList);
+  const { expenses, error } = expenseList;
+
+  const expenseAdd = useSelector((state) => state.expenseAdd);
+  const { success } = expenseAdd;
+
+  const expenseEdit = useSelector((state) => state.expenseEdit);
+  const { success: expenseUpdateSuccess } = expenseEdit;
+
+  const expenseDelete = useSelector((state) => state.expenseDelete);
+  const { success: deleteExpenseSuccess } = expenseDelete;
+
   const [open, setOpen] = useState(false);
-  const [addFormData, setAddFormData] = useState({
-    name: "",
-    amount: "",
-  });
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
 
   const [editFormData, setEditFormData] = useState({
     name: "",
@@ -21,49 +39,68 @@ const HomeScreen = () => {
   const subTotal = expenses.reduce((acc, expense) => acc + expense.amount, 0);
   const taxTotal = expenses.reduce((acc, expense) => acc + expense.amount * 0.15, 0);
 
+  useEffect(() => {
+    if (success) {
+      setOpen(false);
+      setName("");
+      setAmount("");
+      dispatch({ type: EXPENSE_ADD_RESET });
+    }
+    if (expenseUpdateSuccess) {
+      setEditExpenseId(null);
+    }
+    dispatch(getExpenses());
+  }, [dispatch, success, expenseUpdateSuccess, deleteExpenseSuccess]);
+
+  // -- Close new expense form -- //
   const closeHandler = () => {
     setOpen(false);
-    setAddFormData({
-      name: "",
-      amount: "",
-    });
+    setName("");
+    setAmount("");
   };
 
+  // -- Submit new expense -- //
   const submitHandler = (e) => {
     e.preventDefault();
+
+    dispatch(addExpense({ name, amount }));
   };
 
+  // -- Edit expense -- //
   const editExpenseHandler = (expense) => {
-    setEditExpenseId(expense.id);
+    setEditExpenseId(expense._id);
     setEditFormData({
       name: expense.name,
       amount: expense.amount,
     });
   };
 
+  // -- Handle form input  -- //
   const handleEditFormChange = (e) => {
     e.preventDefault();
     const fieldName = e.target.getAttribute("name");
     const fieldValue = e.target.value;
-    console.log();
     const newFormData = { ...editFormData };
     newFormData[fieldName] = fieldValue;
 
     setEditFormData(newFormData);
   };
 
+  // -- Submit edited expense -- //
   const editFormSubmitHandler = (e) => {
     e.preventDefault();
-    console.log(editFormData.name);
-    console.log(editFormData.amount);
+
+    dispatch(editExpense(editFormData, editExpenseId));
   };
 
+  // -- Cancel expense edit --//
   const cancelFormEditHandler = () => {
     setEditExpenseId(null);
   };
 
+  // -- Delete expense -- //
   const deleteExpenseHandler = (expenseId) => {
-    // console.log(expenseId);
+    dispatch(deleteExpense(expenseId));
   };
 
   return (
@@ -90,12 +127,8 @@ const HomeScreen = () => {
                   <input
                     type="text"
                     name="name"
-                    value={addFormData.name}
-                    onChange={(e) =>
-                      setAddFormData({
-                        name: e.target.value,
-                      })
-                    }
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="formInput"
                     required
                     placeholder="Enter a name"
@@ -108,12 +141,8 @@ const HomeScreen = () => {
                   <input
                     type="number"
                     name="amount"
-                    value={addFormData.amount}
-                    onChange={(e) =>
-                      setAddFormData({
-                        amount: e.target.value,
-                      })
-                    }
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
                     className="formInput"
                     required
                     placeholder="Enter an amount"
@@ -134,38 +163,42 @@ const HomeScreen = () => {
             </div>
           </div>
         </div>
-        <form onSubmit={editFormSubmitHandler}>
-          <table className="table">
-            <thead>
-              <tr className="trTest">
-                <th>Description</th>
-                <th>Amount</th>
-                <th>Taxes (15%)</th>
-                <th>Date</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {expenses.map((expense) => (
-                <Fragment key={expense.id}>
-                  {editExpenseId === expense.id ? (
-                    <EditableRow
-                      editFormData={editFormData}
-                      handleEditFormChange={handleEditFormChange}
-                      cancelFormEditHandler={cancelFormEditHandler}
-                    />
-                  ) : (
-                    <ReadOnlyRow
-                      expense={expense}
-                      editExpenseHandler={editExpenseHandler}
-                      deleteExpenseHandler={deleteExpenseHandler}
-                    />
-                  )}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
-        </form>
+        {error ? (
+          <p>{error}</p>
+        ) : (
+          <form onSubmit={editFormSubmitHandler}>
+            <table className="table">
+              <thead>
+                <tr className="trTest">
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th>Taxes (15%)</th>
+                  <th>Date</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {expenses.map((expense) => (
+                  <Fragment key={expense._id}>
+                    {editExpenseId === expense._id ? (
+                      <EditableRow
+                        editFormData={editFormData}
+                        handleEditFormChange={handleEditFormChange}
+                        cancelFormEditHandler={cancelFormEditHandler}
+                      />
+                    ) : (
+                      <ReadOnlyRow
+                        expense={expense}
+                        editExpenseHandler={editExpenseHandler}
+                        deleteExpenseHandler={deleteExpenseHandler}
+                      />
+                    )}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </form>
+        )}
       </div>
     </>
   );

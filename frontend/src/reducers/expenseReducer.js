@@ -18,9 +18,10 @@ import {
 export const expenseListReducer = (state = { expenses: [] }, { type, payload }) => {
   switch (type) {
     case EXPENSE_LIST_REQUEST:
-      return { loading: true, expenses: [] };
+      return { ...state, loading: true, expenses: [] };
     case EXPENSE_LIST_SUCCESS:
       return {
+        ...state,
         loading: false,
         expenses: payload.expenses,
       };

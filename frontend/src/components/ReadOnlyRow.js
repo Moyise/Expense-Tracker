@@ -8,10 +8,10 @@ const ReadOnlyRow = ({ expense, editExpenseHandler, deleteExpenseHandler }) => {
 
   return (
     <tr>
-      <td>{expense.name}</td>
-      <td>{expense.amount}</td>
-      <td>{(expense.amount * 0.15).toFixed(2)}</td>
-      <td>
+      <td data-label="Description">{expense.name}</td>
+      <td data-label="Amount">{expense.amount}</td>
+      <td data-label="Taxes (15%)">{(expense.amount * 0.15).toFixed(2)}</td>
+      <td data-label="Date">
         {date} at {time}
       </td>
       <td>
